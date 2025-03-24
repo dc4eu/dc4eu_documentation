@@ -11,11 +11,12 @@ cross-border context.
 
 ## Contents
 
-- Technical architecture and component overview
-- Integration flow descriptions (issuance, presentation)
-- Configuration instructions for central and local environments
-- Usage examples and API interactions
-- Trust model documentation (federation, metadata, trust marks)
+- [Interoperability Lab Overview](./iInteroperability_lab_overview.md)
+- Setup Wallet Lab
+  - Environment Overview and Tools *(coming soon)*
+  - System Components and Setup *(coming soon)*
+  - [Issuer Integration with the Trust Infrastructure](
+    ./setup_wallet_lab/issuer_integration_with_trust_infrastructure.md)
 
 ## Target Audience
 
@@ -23,10 +24,5 @@ This documentation is intended for technical users involved in the integration
 and development of digital wallet solutions, credential services, or federation
 infrastructure within the scope of DC4EU.
 
-## Repository Scope
-
-This documentation covers the lab environment only. Project-level documentation,
-deliverables, and other work package content is tracked separately.
-
-Refer to the `CONTRIBUTING.md` file for documentation style and structure
-guidelines.
+Refer to the [`CONTRIBUTING.md`](../CONTRIBUTING.md) file for documentation
+style and structure guidelines.
