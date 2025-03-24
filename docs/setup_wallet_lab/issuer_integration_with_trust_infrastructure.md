@@ -15,8 +15,8 @@ Some details may evolve as requirements are refined. Feedback is welcome.
   - [Authority Hints](#authority-hints)
   - [Registering the Issuer as a Subordinate Entity](#registering-the-issuer-as-a-subordinate-entity)
     - [Generating the Issuer Registration Document](#generating-the-issuer-registration-document)
-      - [\*\*Option 1: Manual Method](#option-1-manual-method)
-      - [**Option 2: One-Liner Command (Automated)**](#option-2-one-liner-command-automated)
+      - [Option 1: Manual Method](#option-1-manual-method)
+      - [Option 2: One-Liner Command (Automated)](#option-2-one-liner-command-automated)
       - [Final Step: Send the Document](#final-step-send-the-document)
   - [Trust Marks](#trust-marks)
     - [Types of Trust Marks](#types-of-trust-marks)
@@ -161,7 +161,7 @@ document containing the Issuer’s public keys. You can do this **manually** or 
 using a **one-liner command** to automate the process. Choose the method that
 best suits your setup
 
-##### **Option 1: Manual Method
+##### Option 1: Manual Method
 
 If you prefer to create the document manually, follow these steps:
 
@@ -219,7 +219,7 @@ Move the Public Keys into `jwks`:
 }
 ```
 
-##### **Option 2: One-Liner Command (Automated)**
+##### Option 2: One-Liner Command (Automated)
 
 For users who prefer a quick and automated approach, use this single command to
 generate the JSON document:

@@ -11,7 +11,7 @@ cross-border context.
 
 ## Contents
 
-- [Interoperability Lab Overview](./iInteroperability_lab_overview.md)
+- [Interoperability Lab Overview](./interoperability_lab_overview.md)
 - Setup Wallet Lab
   - Environment Overview and Tools *(coming soon)*
   - System Components and Setup *(coming soon)*
