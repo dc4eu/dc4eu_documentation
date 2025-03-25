@@ -25,6 +25,10 @@ This repository includes:
 Other documents in the repository provide background and context for the DC4EU
 project, its architecture, and its goals.
 
+## Documentation
+
+See [docs/README.md](docs/README.md) for the full documentation index.
+
 ## Contributing
 
 Please read the [CONTRIBUTING.md](CONTRIBUTING.md) file for documentation style,
