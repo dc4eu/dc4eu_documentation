@@ -1,6 +1,6 @@
 # Contributing to DC4EU WP7 Documentation
 
-## Table of Content
+## Table of Contents
 
 - [Introduction](#introduction)
 - [Style Guide](#style-guide)
@@ -10,11 +10,6 @@
     - [Option 1: Editor Plugin (VS Code - markdownlint)](#option-1-editor-plugin-vs-code---markdownlint)
     - [Option 2: Command Line with npm](#option-2-command-line-with-npm)
     - [Option 3: Run with Docker (markdownlint)](#option-3-run-with-docker-markdownlint)
-  - [Using Vale](#using-vale)
-    - [Option 1: Editor Plugin (VS Code – Vale)](#option-1-editor-plugin-vs-code--vale)
-    - [Option 2: Command Line (Vale CLI)](#option-2-command-line-vale-cli)
-    - [Option 3: Run with Docker (Vale)](#option-3-run-with-docker-vale)
-  - [Config](#config)
 - [Writing at 80 Characters in VS Code](#writing-at-80-characters-in-vs-code)
   - [Visual ruler at 80 characters](#visual-ruler-at-80-characters)
   - [Enforce hard line breaks with Rewrap](#enforce-hard-line-breaks-with-rewrap)
@@ -85,11 +80,7 @@ tools:
   A Markdown linter that checks formatting rules like line length, heading
   style, and list indentation. Configured via `.markdownlint.json`.
 
-- **Vale**  
-  A prose linter that can enforce tone, voice, clarity, and other stylistic
-  guidelines. Configured via `.vale.ini` and style definitions.
-
-Configuration files for these tools are included in the repository.
+Configuration files for tools are included in the repository.
 
 ## Linting and Style Checks
 
@@ -144,60 +135,6 @@ markdownlint-cli2 "**/*.md"
 
 - This mounts your current folder into the container and runs the linter.
 - It will respect your local `.markdownlint.json` config if present.
-
----
-
-### Using Vale
-
-Vale is a style linter for writing. It checks your Markdown for grammar, tone,
-clarity, and consistency. You can run it in multiple ways:
-
-#### Option 1: Editor Plugin (VS Code – Vale)
-
-Provides instant feedback while writing.
-
-1. Open VS Code.
-2. Go to Extensions (`Ctrl+Shift+X` or `Cmd+Shift+X`).
-3. Search for **Vale**.
-4. Install the extension by **Chris Chinchilla**.
-5. Make sure you have a `.vale.ini` file in the workspace root.
-
-#### Option 2: Command Line (Vale CLI)
-
-Works across systems and is CI-friendly.
-
-1. Download Vale from:  
-   [Vale CLI Installation](https://vale.sh/docs/vale-cli/installation/)
-
-   Or use Homebrew (macOS):
-
-   ```bash
-   brew install vale
-   ```
-
-2. Make sure a `.vale.ini` config file exists in the repo root.
-3. Run it:
-
-   ```bash
-   vale CONTRIBUTING.md
-   vale docs/
-   ```
-
-#### Option 3: Run with Docker (Vale)
-
-No local install needed.
-
-```bash
-docker run --rm -v "$(pwd)":/docs jdkato/vale vale CONTRIBUTING.md
-```
-
-- You can also mount a config and styles directory with `-v` if you use custom
-  styles.
-- Make sure `.vale.ini` is in the root or explicitly passed via `--config`.
-
-### Config
-
-- The default config in this project uses Vale’s built-in `write-good` style.
 
 ---
 
