@@ -1,0 +1,440 @@
+# System Components and Setup
+
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Components Overview](#components-overview)
+- [Service Descriptions](#service-descriptions)
+  - [SATOSA (External Issuer)](#satosa-external-issuer)
+  - [SimpleSAMLphp](#simplesamlphp)
+  - [API Gateway](#api-gateway)
+  - [UI Service](#ui-service)
+  - [Issuer (Internal Issuer)](#issuer-internal-issuer)
+  - [Verifier](#verifier)
+  - [Registry](#registry)
+  - [MockAS](#mockas)
+  - [MongoDB](#mongodb)
+  - [Jaeger](#jaeger)
+- [Connectivity Levels Explained](#connectivity-levels-explained)
+  - [Internal (Inside Docker Network)](#internal-inside-docker-network)
+  - [Local (Mapped to Host)](#local-mapped-to-host)
+  - [External (Internet-Accessible)](#external-internet-accessible)
+  - [Port Summary Table](#port-summary-table)
+- [SATOSA Authentication Flow](#satosa-authentication-flow)
+  - [Metadata Retrieval](#metadata-retrieval)
+  - [Authentication Flow](#authentication-flow)
+  - [Importance of Consistent Hostname and Port Configuration](#importance-of-consistent-hostname-and-port-configuration)
+    - [How to Prevent Issues](#how-to-prevent-issues)
+- [Setting Up the Environment](#setting-up-the-environment)
+  - [Cloning the Repository](#cloning-the-repository)
+- [Configuring the Environment](#configuring-the-environment)
+  - [Example `.env` File](#example-env-file)
+  - [Explanation of `.env` Variables](#explanation-of-env-variables)
+    - [General Configuration](#general-configuration)
+    - [API Gateway](#api-gateway-1)
+    - [Issuer (SATOSA)](#issuer-satosa)
+    - [SimpleSAMLphp (SAML IdP)](#simplesamlphp-saml-idp)
+    - [Jaeger Tracing](#jaeger-tracing)
+    - [Credential Offer](#credential-offer)
+  - [Configuration Guidelines](#configuration-guidelines)
+- [Running the Setup Script](#running-the-setup-script)
+  - [What This Script Does](#what-this-script-does)
+- [Starting and Stopping Services](#starting-and-stopping-services)
+  - [Start Services](#start-services)
+  - [Stop Services](#stop-services)
+- [Accessing the Services](#accessing-the-services)
+  - [API Gateway (Swagger UI)](#api-gateway-swagger-ui)
+  - [SimpleSAMLphp UI](#simplesamlphp-ui)
+  - [SATOSA Metadata](#satosa-metadata)
+  - [Jaeger Tracing UI](#jaeger-tracing-ui)
+
+## Introduction
+
+This guide provides step-by-step instructions for setting up the **Wallet**
+**Lab services**, covering the configuration of hostnames, ports, and
+certificates. It also explains the role of each service and how they interact
+within the system.
+
+## Components Overview
+
+The services consist of multiple components, each serving a specific role in
+credential issuance and verification. This section describes the components,
+their roles, and functionality. The services are deployed using **Docker
+Compose** and interact with each other over defined **ports and networks**.
+
+## Service Descriptions
+
+### SATOSA (External Issuer)
+
+- **Role:** Issues verifiable credentials and authenticates users.
+- **Functionality:**
+  - Redirects unauthenticated users to SimpleSAMLphp for authentication.
+  - Issues credentials based on validated user identities.
+
+### SimpleSAMLphp
+
+- **Role:** Acts as a SAML IdP backend for SATOSA.
+- **Functionality:**
+  - Authenticates users based on stored credentials.
+  - Generates SAML metadata, which SATOSA uses for authentication.
+
+### API Gateway
+
+- **Role:** Serves as the entry point for all backend services.
+- **Functionality:**
+  - Stateless and scalable, can run across multiple servers or data centers.
+  - Interfaces with SATOSA to fetch credentials during issuance.
+  - Distributes requests to appropriate backend services.
+
+### UI Service
+
+- **Role:** Provides a user interface for backend operations.
+- **Functionality:**
+  - Allows document creation and management.
+  - Assists in handling verifiable credentials.
+
+### Issuer (Internal Issuer)
+
+- **Role:** Handles internal credential issuance, but SATOSA serves as the
+  actual credential issuer in this context.
+- **Functionality:** Works within the backend for credential processing.
+
+### Verifier
+
+- **Role:** Verifies issued credentials (feature still in development).
+
+### Registry
+
+- **Role:** Manages credential registration (under development).
+
+### MockAS
+
+- **Role:** Generates mock documents (e.g., EHIC, PDA1) for use in credential issuance.
+
+### MongoDB
+
+- **Role:** Provides persistent data storage.
+
+### Jaeger
+
+- **Role:** Provides tracing and monitoring for service interactions.
+
+## Connectivity Levels Explained
+
+Understanding network layers is essential to configure the infrastructure
+correctly:
+
+### Internal (Inside Docker Network)
+
+- Services that only communicate within the Docker network.
+- Example: `MockAS`, `MongoDB`, `APIgw`
+- Not accessible from outside the docker network.
+
+### Local (Mapped to Host)
+
+- Services are exposed to the local machine but do not need internet
+  connectivity.
+- Example: `Jaeger`, `UI`
+- Accessible within the host system and the local network, unless prevented by,
+  e.g., firewall rules.
+
+### External (Internet-Accessible)
+
+- Services that must be reachable from the public internet.
+- Example: `SATOSA`, `SimpleSAMLphp`
+- Required for authentication and credential issuance.
+
+### Port Summary Table
+
+Each service in the VC-service infrastructure operates on a specific port, which
+determines how it communicates within the system. The port assignments define
+whether a service is accessible externally (from the internet), locally (within
+the host machine), or internally (within the Docker network only).
+
+- **External:** The service must be accessible from the internet.
+- **Local:** The service is available on the host system but does not require
+  internet access.
+- **Internal:** The service is only reachable inside the Docker network and does
+  not need to be exposed externally.
+
+The following table provides an overview of the ports and their respective
+connectivity requirements:
+
+| Service | Port | Connectivity Type | Notes |
+| --- | --- | --- | --- |
+| **SATOSA** | 8000 | External | Issues credentials & authenticates users |
+| **SimpleSAMLphp** | 8443 | External | SAML authentication service |
+| **ApiGW** | 8080 | Internal | No external access required |
+| **UI** | TBD | Local | Used for backend operations |
+| **Verifier** | TBD | Internal | Not yet fully implemented |
+| **Registry** | TBD | Internal | Not yet fully implemented |
+| **MockAS** | TBD | Internal | Testing authentication services |
+| **MongoDB** | 27017 | Internal | Backend database |
+| **Jaeger** | 16686 | Local | Used for monitoring and tracing |
+
+## SATOSA Authentication Flow
+
+The SimpleSAMLphp service acts as a SAML-IdP, handling authentication requests
+from SATOSA. To function correctly, SATOSA must retrieve metadata from
+SimpleSAMLphp to determine how authentication should be performed.
+
+### Metadata Retrieval
+
+When SATOSA starts, it must fetch metadata from SimpleSAMLphp. By default, the
+metadata is retrieved from:
+
+`https://simplesamlphp.example.com:8443/simplesaml/saml2/idp/metadata.php`
+
+This metadata contains essential details, including authentication endpoints
+where SATOSA must redirect users. **SimpleSAMLphp generates this metadata based
+on how it is accessed**—specifically, the hostname and port that SATOSA uses to
+connect.
+
+SATOSA does not modify this metadata but relies on it as-is for authentication
+redirections.
+
+### Authentication Flow
+
+After retrieving metadata, SATOSA follows this process to authenticate users:
+
+1. User Initiates Authentication
+   - A user attempts to access a SATOSA-protected endpoint.
+2. SATOSA Redirects to SimpleSAMLphp
+   - SATOSA reads the metadata to determine the correct Single Sign-On URL.
+   - The user’s browser is redirected to SimpleSAMLphp for authentication.
+3. User Authenticates with SimpleSAMLphp
+   - The user enters their credentials.
+   - If authentication is successful, SimpleSAMLphp generates a SAML assertion
+     and redirects the user back to SATOSA.
+4. SATOSA Processes the Authentication Response
+   - SATOSA validates the SAML assertion.
+   - If valid, SATOSA completes authentication and grants access to the user.
+
+### Importance of Consistent Hostname and Port Configuration
+
+Since SATOSA retrieves metadata from SimpleSAMLphp, the authentication redirect
+URL is determined by this metadata.
+
+If the hostname or port used during metadata retrieval differs from the one
+required during redirection, authentication will fail due to incorrect
+redirects.
+
+#### How to Prevent Issues
+
+- **The same hostname and port must be used for internal and external access.**
+  - **Correct Example:**
+    - **SATOSA fetches metadata from `https://simplesamlphp.example.com:8443`**
+    - **SATOSA also redirects users to**
+      **`https://simplesamlphp.example.com:8443` during authentication.**
+
+This consistent setup avoids unnecessary authentication failures.
+
+## Setting Up the Environment
+
+To successfully set up the Docker Compose project, follow these steps:
+
+### Cloning the Repository
+
+Clone the vc_up_and_running repository from GitHub:
+
+```bash
+git clone git@github.com:dc4eu/vc_up_and_running.git
+cd vc_up_and_running
+```
+
+## Configuring the Environment
+
+The environment is defined in the `.env` file, which contains key configuration
+variables required for setting up and running the system. In most cases,
+modifying these variables is sufficient to configure the environment.
+
+Changes to other files, such as the Docker Compose configuration, may lead to
+unexpected behavior and should only be made when necessary.
+
+### Example `.env` File
+
+```bash
+APIGW_HOST_PORT=8080
+JAEGER_HOST_PORT=16686
+TAG=0.5.17
+DOCKERHUB_FQDN=docker.sunet.se
+NETWORK_NAME=dc4eu_shared_network
+ISSUER_HOST=issuer.example.com
+ISSUER_URL=https://issuer.example.com:8000
+SAML_IDP_HOST=simplesamlphp.example.com
+SAML_MD_URL=https://simplesamlphp.example.com:8443/simplesaml/saml2/idp/metadata.php
+SAML_DS_URL=https://ds.example.com
+APIGW_HOST=apigw.example.com
+APIGW_URL=http://apigw.example.com:8080
+CREDENTIAL_OFFER_URL=https://dc4eu.wwwallet.org/cb
+```
+
+### Explanation of `.env` Variables
+
+#### General Configuration
+
+- TAG=0.5.17  
+  Specifies the version tag of the deployed Docker images.
+- DOCKERHUB_FQDN=docker.sunet.se  
+  Docker registry URL for pulling images.
+- NETWORK_NAME=dc4eu_shared_network  
+  The name of the Docker network that all containers use for internal
+  communication.
+
+#### API Gateway
+
+- APIGW_HOST_PORT=8080  
+  The port mapped to the host for accessing the API Gateway.
+- APIGW_HOST=apigw.example.com  
+  The FQDN for the API Gateway.
+- APIGW_URL=`http://apigw.example.com:8080`  
+  The full URL where ApiGW is accessible.  
+  **Important**: The API Gateway uses HTTP, not HTTPS.
+
+#### Issuer (SATOSA)
+
+- ISSUER_HOST=issuer.example.com  
+  The FQDN of the SATOSA issuer service.
+- ISSUER_URL=`https://issuer.example.com:8000`  
+  The full URL where the issuer service is accessible externally.
+
+#### SimpleSAMLphp (SAML IdP)
+
+- SAML_IDP_HOST=simplesamlphp.example.com  
+  The FQDN of the SimpleSAMLphp identity provider.  
+  Important: This hostname must be the same internally in Docker and externally,
+  otherwise, SATOSA will generate incorrect authentication redirection URLs.
+- SAML_MD_URL=
+ `https://simplesamlphp.example.com:8443/simplesaml/saml2/idp/metadata.php`  
+  The URL where SATOSA retrieves SAML metadata from SimpleSAMLphp.
+  - This URL is used both internally (inside Docker) and externally.
+  - The hostname and port in this URL must match the actual external service.
+  - If the internal hostname or port differs, authentication redirects will fail.
+- SAML_DS_URL=`https://ds.example.com`  
+  The Discovery Service (DS) URL.
+  - This is only used if the internal SAML IdP is not used and
+  - The metadata (SAML_MD_URL) contains multiple IdPs.
+  - If set, users will be presented with a choice of IdPs for authentication.
+
+#### Jaeger Tracing
+
+- JAEGER_HOST_PORT=16686  
+  The port mapped to the host for Jaeger, used for monitoring and tracing.
+
+#### Credential Offer
+
+- CREDENTIAL_OFFER_URL=`https://dc4eu.wwwallet.org/cb`  
+  The callback URL where credentials are offered to wallets.
+
+### Configuration Guidelines
+
+- Ensure hostnames are correctly set
+  - If external access is needed, hostnames must be set to real FQDNs.
+  - Internal hostnames must match the metadata configuration (e.g.,
+    `SAML_MD_URL`).
+- Ensure required ports are open and properly mapped
+  - SATOSA (8000) and SimpleSAMLphp (8443) must be accessible externally.
+  - API Gateway (8080) operates on HTTP and does not require external access.
+
+By correctly configuring these variables, you ensure that services communicate
+properly and that the system functions as expected.
+
+## Running the Setup Script
+
+The start.sh script initializes the environment, generates the required keys and
+certificates, and starts the necessary services.
+
+To run the script, execute:
+
+```bash
+./start.sh
+```
+
+### What This Script Does
+
+The script performs the following setup tasks:
+
+- Creates the required Docker network if it does not already exist.
+- Generates private keys for credential signing.
+- Creates SAML certificates for SATOSA and SimpleSAMLphp.
+- Extracts SAML metadata from SATOSA, ensuring that SimpleSAMLphp is correctly
+  configured.
+- Starts all required services by launching Docker containers with
+  docker-compose.
+
+This ensures that all necessary configurations are in place before the system
+starts running.
+
+## Starting and Stopping Services
+
+Once the environment is set up, you can manage the services as follows:
+
+### Start Services
+
+To start all services:
+
+```bash
+./start.sh
+```
+
+### Stop Services
+
+To gracefully stop all running services:
+
+```bash
+./stop.sh
+```
+
+This will shut down all containers while preserving the configuration and stored
+data.
+
+## Accessing the Services
+
+Once the environment is running, you can access various services via the
+following URLs:
+
+| **Service** | **URL** |
+| --- | --- |
+| **API Gateway (Swagger UI)** | `http://127.0.0.1:8080/swagger/index.html` |
+| **SimpleSAMLphp UI** | `https://simplesamlphp.example.com:8443/simplesaml/` |
+| **SATOSA Metadata** | `https://issuer.example.com:8000/.well-known/openid-configuration` |
+| **Jaeger Tracing UI** | `http://127.0.0.1:16686` |
+
+### API Gateway (Swagger UI)
+
+The API Gateway provides an interface to interact with backend services. Swagger
+UI allows you to test and explore available API endpoints.
+
+- **URL:** `http://127.0.0.1:8080/swagger/index.html`
+- **Functionality:**
+  - View API documentation
+  - Execute API requests directly from the browser
+
+### SimpleSAMLphp UI
+
+The **SimpleSAMLphp UI** provides a web interface for managing SAML
+configurations and testing authentication.
+
+- **URL:** `https://simplesamlphp.example.com:8443/simplesaml/`
+- **Functionality:**
+  - View SAML IdP configuration
+  - Test authentication with pre-configured users
+
+### SATOSA Metadata
+
+The SATOSA Trust Infrastructure entity configuration can be accessed to verify
+that the service is running.
+
+- **URL:** `https://issuer.example.com:8000/.well-known/openid-configuration`
+- **Functionality:**
+  - Returns metadata about the SATOSA OpenID Connect frontend
+  - Can be used to verify that SATOSA is operational
+
+### Jaeger Tracing UI
+
+Jaeger provides tracing and monitoring of requests across the **VC services**.
+
+- **URL:** `http://127.0.0.1:16686`
+- **Functionality:**
+  - Monitor internal service communication in real-time
+  - Debug request flows across the infrastructure
