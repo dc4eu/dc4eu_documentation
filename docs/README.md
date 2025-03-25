@@ -12,9 +12,12 @@ cross-border context.
 ## Contents
 
 - [Interoperability Lab Overview](./interoperability_lab_overview.md)
+
 - Setup Wallet Lab
-  - Environment Overview and Tools *(coming soon)*
-  - System Components and Setup *(coming soon)*
+  - [Environment Overview and
+    Tools](./setup_wallet_lab/environment_overview_and_tools.md)
+  - [System Components and
+    Setup](./setup_wallet_lab/system_components_and_setup.md)
   - [Issuer Integration with the Trust Infrastructure](
     ./setup_wallet_lab/issuer_integration_with_trust_infrastructure.md)
 
