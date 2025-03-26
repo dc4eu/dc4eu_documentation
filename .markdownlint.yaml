@@ -1,0 +1,14 @@
+default: true
+
+MD013:
+  line_length: 80     # Limit lines to 80 characters (still allows long lines if you disable this)
+MD033: false           # Allow inline HTML
+
+
+MD003:
+  style: atx           # Use # for headings
+MD004:
+  style: dash          # Use - for unordered list items
+MD022: true            # Require blank line before each heading
+MD012: true            # Require blank lines around list items
+MD047: true            # Require a trailing newline at end of file
