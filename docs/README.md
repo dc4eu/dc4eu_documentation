@@ -21,6 +21,9 @@ cross-border context.
   - [Issuer Integration with the Trust Infrastructure](
     ./setup_wallet_lab/issuer_integration_with_trust_infrastructure.md)
 
+- Trust Framework
+  - [DC4EU Pilot Federation](./trust_framework/dc4eu_pilot_federation.md)
+
 ## Target Audience
 
 This documentation is intended for technical users involved in the integration
