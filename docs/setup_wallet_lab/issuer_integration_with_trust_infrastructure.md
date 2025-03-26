@@ -228,7 +228,18 @@ generate the JSON document:
 URI.**
 
 ```bash
-issuer_entity_uri="https://issuer.example.com" && jq --arg uri "$issuer_entity_uri" '{($uri): {"entity_types": ["federation_entity", "openid_credential_issuer", "oauth_authorization_server"], "jwks": .}}' satosa/public/pid_fed_keys.json > issuer_registration.json
+issuer_entity_uri="https://issuer.example.com" && \
+jq --arg uri "$issuer_entity_uri" \
+  '{($uri): {
+    "entity_types": [
+      "federation_entity",
+      "openid_credential_issuer",
+      "oauth_authorization_server"
+    ],
+    "jwks": .
+  }}' \
+  satosa/public/pid_fed_keys.json \
+  > issuer_registration.json
 ```
 
 ##### Final Step: Send the Document
