@@ -31,15 +31,14 @@
     - [Remediation Steps](#remediation-steps)
     - [Trust Considerations](#trust-considerations)
   - [Managing Environment Variables](#managing-environment-variables)
-  - [Example `.env` File](#example-env-file)
-  - [Explanation of `.env` Variables](#explanation-of-env-variables)
-    - [General Configuration](#general-configuration)
-    - [API Gateway](#api-gateway-1)
-    - [Issuer (SATOSA)](#issuer-satosa)
-    - [SimpleSAMLphp (SAML IdP)](#simplesamlphp-saml-idp)
-    - [Jaeger Tracing](#jaeger-tracing)
-    - [Credential Offer](#credential-offer)
-  - [Configuration Guidelines](#configuration-guidelines)
+    - [Explanation of `.env` Variables](#explanation-of-env-variables)
+      - [General Configuration](#general-configuration)
+      - [API Gateway](#api-gateway-1)
+      - [Issuer (SATOSA)](#issuer-satosa)
+      - [SimpleSAMLphp (SAML IdP)](#simplesamlphp-saml-idp)
+      - [Jaeger Tracing](#jaeger-tracing)
+      - [Credential Offer](#credential-offer)
+    - [Configuration Guidelines](#configuration-guidelines)
 - [Running the Setup Script](#running-the-setup-script)
   - [What This Script Does](#what-this-script-does)
 - [Starting and Stopping Services](#starting-and-stopping-services)
@@ -303,7 +302,7 @@ modifying these variables is sufficient to configure the environment.
 Changes to other files, such as the Docker Compose configuration, may lead to
 unexpected behavior and should only be made when necessary.
 
-### Example `.env` File
+#### Explanation of `.env` Variables
 
 ```bash
 APIGW_HOST_PORT=8080
@@ -321,9 +320,7 @@ APIGW_URL=http://apigw.example.com:8080
 CREDENTIAL_OFFER_URL=https://dc4eu.wwwallet.org/cb
 ```
 
-### Explanation of `.env` Variables
-
-#### General Configuration
+##### General Configuration
 
 - TAG=0.5.17  
   Specifies the version tag of the deployed Docker images.
@@ -333,7 +330,7 @@ CREDENTIAL_OFFER_URL=https://dc4eu.wwwallet.org/cb
   The name of the Docker network that all containers use for internal
   communication.
 
-#### API Gateway
+##### API Gateway
 
 - APIGW_HOST_PORT=8080  
   The port mapped to the host for accessing the API Gateway.
@@ -343,14 +340,14 @@ CREDENTIAL_OFFER_URL=https://dc4eu.wwwallet.org/cb
   The full URL where ApiGW is accessible.  
   **Important**: The API Gateway uses HTTP, not HTTPS.
 
-#### Issuer (SATOSA)
+##### Issuer (SATOSA)
 
 - ISSUER_HOST=issuer.example.com  
   The FQDN of the SATOSA issuer service.
 - ISSUER_URL=`https://issuer.example.com:8000`  
   The full URL where the issuer service is accessible externally.
 
-#### SimpleSAMLphp (SAML IdP)
+##### SimpleSAMLphp (SAML IdP)
 
 - SAML_IDP_HOST=simplesamlphp.example.com  
   The FQDN of the SimpleSAMLphp identity provider.  
@@ -368,17 +365,17 @@ CREDENTIAL_OFFER_URL=https://dc4eu.wwwallet.org/cb
   - The metadata (SAML_MD_URL) contains multiple IdPs.
   - If set, users will be presented with a choice of IdPs for authentication.
 
-#### Jaeger Tracing
+##### Jaeger Tracing
 
 - JAEGER_HOST_PORT=16686  
   The port mapped to the host for Jaeger, used for monitoring and tracing.
 
-#### Credential Offer
+##### Credential Offer
 
 - CREDENTIAL_OFFER_URL=`https://dc4eu.wwwallet.org/cb`  
   The callback URL where credentials are offered to wallets.
 
-### Configuration Guidelines
+#### Configuration Guidelines
 
 - Ensure hostnames are correctly set
   - If external access is needed, hostnames must be set to real FQDNs.
