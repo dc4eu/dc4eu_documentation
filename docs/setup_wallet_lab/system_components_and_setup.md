@@ -27,7 +27,10 @@
     - [How to Prevent Issues](#how-to-prevent-issues)
 - [Setting Up the Environment](#setting-up-the-environment)
   - [Cloning the Repository](#cloning-the-repository)
-- [Configuring the Environment](#configuring-the-environment)
+  - [TLS Certificate Requirements for SATOSA](#tls-certificate-requirements-for-satosa)
+    - [Remediation Steps](#remediation-steps)
+    - [Trust Considerations](#trust-considerations)
+  - [Managing Environment Variables](#managing-environment-variables)
   - [Example `.env` File](#example-env-file)
   - [Explanation of `.env` Variables](#explanation-of-env-variables)
     - [General Configuration](#general-configuration)
@@ -242,7 +245,56 @@ git clone git@github.com:dc4eu/vc_up_and_running.git
 cd vc_up_and_running
 ```
 
-## Configuring the Environment
+### TLS Certificate Requirements for SATOSA
+
+Before initializing the SATOSA container, a valid TLS private key and
+corresponding certificate must be present in the `./certs` directory. These
+files must be named as follows:
+
+- `https.key` — the private key file
+- `https.crt` — the certificate file  
+
+If these files are missing at startup, Docker will attempt to mount the named
+volumes and instead create **empty directories** named `https.crt` and
+`https.key`. These directories will be owned by `root`, which leads to HTTPS
+binding failures in the container.
+
+#### Remediation Steps
+
+1. Stop all running containers:
+
+   ```bash
+   ./stop.sh
+   ```
+
+2. Remove any incorrectly created directories:
+
+   ```bash
+   sudo rm -r ./certs/https.crt ./certs/https.key ./satosa/https.crt ./satosa/https.key
+   ```
+
+3. Place the correct certificate and key files in the `./certs` directory:
+
+   - `./certs/https.crt`
+   - `./certs/https.key`
+
+4. Restart the environment:
+
+   ```bash
+   ./start.sh
+   ```
+
+#### Trust Considerations
+
+The certificate should be issued by a publicly trusted CA. If a self-signed
+certificate is used, all dependent components — including wallets, federation
+resolvers, and other relying parties — must be explicitly configured to trust
+the certificate.
+
+For production environments and optimal interoperability, a certificate from a
+recognized CA is strongly recommended.
+
+### Managing Environment Variables
 
 The environment is defined in the `.env` file, which contains key configuration
 variables required for setting up and running the system. In most cases,
