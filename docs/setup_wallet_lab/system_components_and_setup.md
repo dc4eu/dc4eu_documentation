@@ -286,12 +286,17 @@ binding failures in the container.
 #### Trust Considerations
 
 The certificate should be issued by a publicly trusted CA. If a self-signed
-certificate is used, all dependent components — including wallets, federation
-resolvers, and other relying parties — must be explicitly configured to trust
-the certificate.
+certificate is used, all dependent components, including wallets, federation
+resolvers, and other relying parties, must be explicitly configured to trust the
+certificate.
 
-For production environments and optimal interoperability, a certificate from a
-recognized CA is strongly recommended.
+In setups where SATOSA is deployed behind a reverse proxy (e.g., F5, NGINX), it
+is common to terminate TLS at the proxy using a public certificate, while using
+a self-signed certificate between the proxy and SATOSA. This approach is valid
+as long as the proxy handles trust and certificate validation externally.
+
+For production environments and optimal interoperability, using a certificate
+from a recognized CA at the external interface is strongly recommended.
 
 ### Managing Environment Variables
 
