@@ -28,7 +28,7 @@
 
 ## Introduction
 
-This guide explains how to integrate the `vc_up_and_running` datastore by 
+This guide explains how to integrate the `vc_up_and_running` datastore by
 creating and managing documents and issuing credentials within the lab setup.
 
 This documentation refers to `vc_up_and_running` tag **v0.5.17** and
@@ -76,7 +76,7 @@ ok -- validation done
 ## Test and verify functionality
 
 You can interact with the datastore in multiple ways. This section outlines how
-to create, view, and manage documents and credentials using the VC UI or Swagger.
+to create, view, and manage documents and credentials using the VC UI or Swagger
 
 ### Use the VC UI
 
@@ -124,7 +124,8 @@ Available features:
 
 #### Search for documents
 
-Navigate to **Dev/test support → Search documents** to use advanced search parameters.
+Navigate to **Dev/test support → Search documents**
+to use advanced search parameters.
 
 ##### Perform document actions
 
