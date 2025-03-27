@@ -21,6 +21,10 @@ cross-border context.
   - [Issuer Integration with the Trust Infrastructure](
     ./setup_wallet_lab/issuer_integration_with_trust_infrastructure.md)
 
+- Integrating with Wallet Lab
+  - [Integration with Datastore](
+    ./integrating_with_wallet_lab/integration_with_datastore.md)
+
 - Trust Framework
   - [DC4EU Pilot Federation](./trust_framework/dc4eu_pilot_federation.md)
 
