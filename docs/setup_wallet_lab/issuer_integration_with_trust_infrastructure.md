@@ -161,6 +161,9 @@ document containing the Issuer’s public keys. You can do this **manually** or 
 using a **one-liner command** to automate the process. Choose the method that
 best suits your setup
 
+**Note:** the value of the `ISSUER_URL` in the `.env` file is used as the **Issuer
+Entity Identifier** in the options below.
+
 ##### Option 1: Manual Method
 
 If you prefer to create the document manually, follow these steps:
@@ -175,12 +178,12 @@ Edit issuer_registration.json:
 
 - Open the file in a text editor of your choice
 - Modify the contents to match the following structure,
-  replacing **`<issuer-entity-id>`** with the actual **Issuer Entity
+  replacing **`<issuer-entity-identifier>`** with the actual **Issuer Entity
   Identifier** (e.g., `https://issuer.example.com`):
 
 ```json
 {
-  "<issuer-entity-id>": {
+  "<issuer-entity-identifier>": {
     "entity_types": [
       "federation_entity",
       "openid_credential_issuer",
@@ -225,11 +228,11 @@ For users who prefer a quick and automated approach, use this single command to
 generate the JSON document:
 
 **Replace** `"https://issuer.example.com"` with the actual **Issuer Entity
-URI.**
+Identifier.**
 
 ```bash
-issuer_entity_uri="https://issuer.example.com" && \
-jq --arg uri "$issuer_entity_uri" \
+issuer_entity_identifier="https://issuer.example.com" && \
+jq --arg uri "$issuer_entity_identifier" \
   '{($uri): {
     "entity_types": [
       "federation_entity",
