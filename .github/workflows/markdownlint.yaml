@@ -1,0 +1,67 @@
+name: Lint changed Markdown
+
+on:
+  push:
+    branches: [ '**' ]
+    paths:
+      - '**/*.md'
+  pull_request:
+    branches: [main]
+    paths:
+      - '**/*.md'
+
+jobs:
+  markdownlint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          # We need more than 1 commit’s history
+          # so we can diff against `github.event.before` or base branch
+          fetch-depth: 0
+
+      - name: Determine diff base
+        id: set-base
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # For pull_request, base_ref is something like "main"
+            echo "BASE_REF=${{ github.base_ref }}" >> $GITHUB_ENV
+            echo "REF_TYPE=pr" >> $GITHUB_ENV
+          else
+            # For push, we compare HEAD with the commit before the push
+            echo "BASE_REF=${{ github.event.before }}" >> $GITHUB_ENV
+            echo "REF_TYPE=push" >> $GITHUB_ENV
+          fi
+
+      - name: Get changed Markdown files
+        id: diff
+        run: |
+          if [ "${{ env.REF_TYPE }}" = "pr" ]; then
+            # For a PR, fetch the base branch (e.g., "main")
+            git fetch --depth=1 origin "${{ env.BASE_REF }}"
+            CHANGED_FILES=$(git diff --name-only HEAD "origin/${{ env.BASE_REF }}" -- '*.md')
+          else
+            # For a push: fetch the old commit so we can diff HEAD to that commit
+            git fetch --depth=1 origin "${{ env.BASE_REF }}"
+            CHANGED_FILES=$(git diff --name-only HEAD "${{ env.BASE_REF }}" -- '*.md')
+          fi
+
+          echo "files=$CHANGED_FILES" >> $GITHUB_OUTPUT
+
+      - name: Lint changed files only
+        run: |
+          if [ -z "${{ steps.diff.outputs.files }}" ]; then
+            echo "No changed Markdown files."
+            exit 0
+          fi
+
+          npm install -g markdownlint-cli2
+
+          IFS=$'\n'
+          for file in ${{ steps.diff.outputs.files }}
+          do
+            echo "Linting $file..."
+            markdownlint-cli2 "$file"
+          done
+          unset IFS
