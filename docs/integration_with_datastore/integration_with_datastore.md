@@ -28,9 +28,11 @@
 
 ## Introduction
 
-This guide explains how to integrate the `vc_up_and_running` datastore by creating and managing documents and issuing credentials within the lab setup.
+This guide explains how to integrate the `vc_up_and_running` datastore by 
+creating and managing documents and issuing credentials within the lab setup.
 
-This documentation refers to `vc_up_and_running` tag **v0.5.17** and [API Specification v2.8](https://github.com/dc4eu/vc/blob/main/standards/api_specification.md).
+This documentation refers to `vc_up_and_running` tag **v0.5.17** and
+[API Specification v2.8](https://github.com/dc4eu/vc/blob/main/standards/api_specification.md).
 
 ---
 
@@ -38,15 +40,18 @@ This documentation refers to `vc_up_and_running` tag **v0.5.17** and [API Specif
 
 Before you begin, make sure you have:
 
-- A local instance of `vc_up_and_running`. See [System Components and Setup](https://github.com/dc4eu/dc4eu_documentation/blob/main/docs/setup_wallet_lab/system_components_and_setup.md) for details.
+- A local instance of `vc_up_and_running`
+
+See [System Components and Setup](https://github.com/dc4eu/dc4eu_documentation/blob/main/docs/setup_wallet_lab/system_components_and_setup.md).
 
 ---
 
 ## Format and validate documents
 
-You must format all documents according to their respective schemas within the `document_data` object. The API **does not validate documents** upon upload.
+You must format all documents according to their respective schemas within the
+`document_data` object. The API **does not validate documents** upon upload.
 
-Validate documents manually using [check-jsonschema](https://pypi.org/project/check-jsonschema) or similar tools:
+Validate documents manually using [check-jsonschema](https://pypi.org/project/check-jsonschema):
 
 - [EHIC JSON Schema](https://github.com/dc4eu/vc/blob/main/standards/schema_ehic.json)
 - [PD A1 JSON Schema](https://github.com/dc4eu/vc/blob/main/standards/schema_pda1.json)
@@ -62,7 +67,7 @@ check-jsonschema --schemafile schemas/ehic-schema.md /path/to/ehic-document.json
 
 Expected output:
 
-```
+```bash
 ok -- validation done
 ```
 
@@ -70,7 +75,8 @@ ok -- validation done
 
 ## Test and verify functionality
 
-You can interact with the datastore in multiple ways. This section outlines how to create, view, and manage documents and credentials using the VC UI or Swagger UI.
+You can interact with the datastore in multiple ways. This section outlines how
+to create, view, and manage documents and credentials using the VC UI or Swagger.
 
 ### Use the VC UI
 
@@ -99,7 +105,7 @@ Access the UI via your browser at `http://<your-host>:8081`.
 
 Default credentials are:
 
-```
+```bash
 Username: admin
 Password: secret123
 ```
@@ -131,15 +137,17 @@ Each search result includes a dropdown menu with:
 
 #### Upload documents from a CSV file
 
-See CSV format examples in the [upload_csv_templates](https://github.com/dc4eu/vc/tree/main/internal/ui/upload_csv_templates) directory.
+See CSV format examples in the [upload_csv_templates](https://github.com/dc4eu/vc/tree/main/internal/ui/upload_csv_templates)
+directory.
 
 #### Upload documents as JSON
 
-Go to **Dev/test support → Upload document as JSON**, paste your JSON, and click **Upload**.
+Go to **Dev/test support → Upload document as JSON**, paste your JSON, and
+click **Upload**.
 
 Successful response:
 
-```
+```bash
 Response status: 200 (OK)
 Content-Type: application/json; charset=utf-8
 ```
@@ -154,7 +162,7 @@ null
 
 Access Swagger UI at:
 
-```
+```bash
 http://<API-Gateway>/swagger/index.html
 ```
 
@@ -173,7 +181,8 @@ This guide covers common operations:
 
 ### Upload document to datastore
 
-Use the `/upload` endpoint to create documents. See [API specification](https://github.com/dc4eu/vc/blob/main/standards/api_specification.md) for full reference.
+Use the `/upload` endpoint to create documents. See [API specification](https://github.com/dc4eu/vc/blob/main/standards/api_specification.md)
+for full reference.
 
 #### Create JSON for EHIC document
 
