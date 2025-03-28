@@ -1,7 +1,7 @@
 default: true
 
 MD013:
-  line_length: 80     # Limit lines to 80 characters (still allows long lines if you disable this)
+  line_length: 80      # Limit lines to 80 characters (still allows long lines if you disable this)
 MD033: false           # Allow inline HTML
 
 
