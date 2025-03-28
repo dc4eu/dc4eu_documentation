@@ -4,10 +4,9 @@ This documentation describes the setup and structure of the DC4EU wallet
 interoperability lab, developed under Work Package 7 (WP7).
 
 The lab environment provides a testable implementation of a DC4EU reference
-wallet interacting with a federated trust infrastructure based on OpenID
-technologies. It is intended for implementers working with credential issuance
-and presentation across wallet providers, issuers, and verifiers in a
-cross-border context.
+wallet interacting with a trust infrastructure. It is intended for implementers
+working with credential issuance and presentation across wallet providers,
+issuers, and verifiers in a cross-border context.
 
 ## Contents
 
