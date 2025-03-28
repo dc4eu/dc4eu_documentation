@@ -2,9 +2,9 @@ default: true
 
 MD013:
   line_length: 80      # Limit lines to 80 characters (still allows long lines if you disable this)
+  ignore_code_blocks: true
+  tables: false
 MD033: false           # Allow inline HTML
-
-
 MD003:
   style: atx           # Use # for headings
 MD004:
