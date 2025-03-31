@@ -19,6 +19,7 @@ issuers, and verifiers in a cross-border context.
     Setup](./setup_wallet_lab/system_components_and_setup.md)
   - [Issuer Integration with the Trust Infrastructure](
     ./setup_wallet_lab/issuer_integration_with_trust_infrastructure.md)
+  - [Troubleshooting Checklist](./setup_wallet_lab/troubleshooting_checklist.md)
 
 - Integrating with Wallet Lab
   - [Integration with Datastore](
