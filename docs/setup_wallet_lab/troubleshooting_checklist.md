@@ -1,5 +1,16 @@
 # Troubleshooting Checklist
 
+## Table of Contents
+
+- [Certificate \& TLS](#certificate--tls)
+- [Entity Configuration](#entity-configuration)
+- [Federation Status](#federation-status)
+- [Trust Mark Signature Verification](#trust-mark-signature-verification)
+- [URL Format Consistency](#url-format-consistency)
+- [Credential Offer Link](#credential-offer-link)
+- [SATOSA Logs](#satosa-logs)
+- [SimpleSAMLphp Metadata](#simplesamlphp-metadata)
+
 ## Certificate & TLS
 
 - Confirm the TLS certificate is valid and properly served:
