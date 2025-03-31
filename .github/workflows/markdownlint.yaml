@@ -6,62 +6,68 @@ on:
     paths:
       - '**/*.md'
   pull_request:
-    branches: [main]
+    branches: [ main ]
     paths:
       - '**/*.md'
 
 jobs:
   markdownlint:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out code
         uses: actions/checkout@v3
         with:
-          # We need more than 1 commit’s history
-          # so we can diff against `github.event.before` or base branch
-          fetch-depth: 0
+          fetch-depth: 0  # Needed to get full history for diffing
 
       - name: Determine diff base
         id: set-base
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            # For pull_request, base_ref is something like "main"
             echo "BASE_REF=${{ github.base_ref }}" >> $GITHUB_ENV
             echo "REF_TYPE=pr" >> $GITHUB_ENV
           else
-            # For push, we compare HEAD with the commit before the push
-            echo "BASE_REF=${{ github.event.before }}" >> $GITHUB_ENV
+            if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+              # First push to a new branch: fallback to main
+              echo "BASE_REF=main" >> $GITHUB_ENV
+            else
+              echo "BASE_REF=${{ github.event.before }}" >> $GITHUB_ENV
+            fi
             echo "REF_TYPE=push" >> $GITHUB_ENV
           fi
 
       - name: Get changed Markdown files
-        id: diff
         run: |
-          if [ "${{ env.REF_TYPE }}" = "pr" ]; then
-            # For a PR, fetch the base branch (e.g., "main")
-            git fetch --depth=1 origin "${{ env.BASE_REF }}"
-            CHANGED_FILES=$(git diff --name-only HEAD "origin/${{ env.BASE_REF }}" -- '*.md')
+          if [ "$REF_TYPE" = "pr" ]; then
+            git fetch origin "$BASE_REF":"refs/remotes/origin/$BASE_REF"
+            git diff --name-only HEAD "origin/$BASE_REF" -- '*.md' > changed_files.txt
           else
-            # For a push: fetch the old commit so we can diff HEAD to that commit
-            git fetch --depth=1 origin "${{ env.BASE_REF }}"
-            CHANGED_FILES=$(git diff --name-only HEAD "${{ env.BASE_REF }}" -- '*.md')
+            git fetch origin "$BASE_REF:$BASE_REF"
+            git diff --name-only HEAD "$BASE_REF" -- '*.md' > changed_files.txt
           fi
 
-          echo "files=$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "Changed Markdown files:"
+          cat changed_files.txt || echo "No changed Markdown files."
 
-      - name: Lint changed files only
+      - name: Lint changed Markdown files
         run: |
-          if [ -z "${{ steps.diff.outputs.files }}" ]; then
-            echo "No changed Markdown files."
+          if [ ! -s changed_files.txt ]; then
+            echo "No changed Markdown files to lint."
             exit 0
           fi
 
           npm install -g markdownlint-cli2
 
-          IFS=$'\n'
-          for file in ${{ steps.diff.outputs.files }}
-          do
-            echo "Linting $file..."
-            markdownlint-cli2 "$file"
-          done
-          unset IFS
+          echo "Linting the following files:"
+          cat changed_files.txt
+
+          EXIT_CODE=0
+
+          while IFS= read -r file; do
+            echo "Linting: $file"
+            if ! markdownlint-cli2 "$file"; then
+              EXIT_CODE=1
+            fi
+          done < changed_files.txt
+
+          exit $EXIT_CODE
