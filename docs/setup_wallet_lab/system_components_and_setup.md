@@ -30,6 +30,8 @@
   - [TLS Certificate Requirements for SATOSA](#tls-certificate-requirements-for-satosa)
     - [Remediation Steps](#remediation-steps)
     - [Trust Considerations](#trust-considerations)
+    - [Using self-signed certificates](#using-self-signed-certificates)
+  - [TLS Certificate Requirements for SimpleSAMLphp](#tls-certificate-requirements-for-simplesamlphp)
   - [Managing Environment Variables](#managing-environment-variables)
     - [Explanation of `.env` Variables](#explanation-of-env-variables)
       - [General Configuration](#general-configuration)
@@ -297,6 +299,91 @@ as long as the proxy handles trust and certificate validation externally.
 
 For production environments and optimal interoperability, using a certificate
 from a recognized CA at the external interface is strongly recommended.
+
+#### Using self-signed certificates
+
+If you want to setup the environment with self-signed certificates, the
+following steps need to be configured in vc_up_and_running. Note that this does
+not document the trust setup for other relying parties mentioned in
+[Trust Considerations](#trust-considerations) above.
+
+1. Create SATOSA certificate and key in certificates folder:
+  
+   ```bash
+   openssl req -x509 \
+   -newkey rsa:4096 \
+   -keyout certs/https.key \
+   -out certs/https.crt \
+   -sha256 \
+   -days 3650 \
+   -nodes \
+   --subj "/CN=<your-issuer-fqdn>" \
+   -addext "subjectAltName=DNS:<your-issuer-fqdn>"
+   ```
+
+   Change `<your-issuer-fqdn>` to the correct FQDN.
+  
+   This SATOSA issuer certificate will need to be trusted by federation trust
+   infrastructure, wallets and other relying parties.
+
+2. Edit `docker-compose.yaml` to accept SimpleSAMLphp self-signed certificate
+  in SATOSA:
+  
+   ```bash
+   services:
+    satosa:
+      environment:
+       - "REQUESTS_CA_BUNDLE=/etc/satosa/simplesaml_webcert.pem"
+   ```
+  
+3. Create SimpleSAMLphp certificate and key and create environment with
+   `./start.sh` script:
+  
+   If `./simplesaml/webcert/privkey.pem` does not exist the `./start.sh` will
+   create a self-signed certificate for SimpleSAMLphp at startup and copy the
+   certificate to `./satosa/simplesaml_webcert.pem`.
+
+   ```bash
+   ./start.sh
+   ```
+
+   Expected result:
+
+   ```bash
+   Create simplesamlphp web certificates.
+   ```
+
+### TLS Certificate Requirements for SimpleSAMLphp
+
+To use an issued web certificate in SimpleSAMLphp, a valid TLS private key and
+corresponding certificate must be present in the `./simplesaml/webcert`
+directory. These
+files must be named as follows:
+
+- `cert.pem` - the certificate file
+- `privkey.pem` - the private key file
+
+If these are not present the `./start.sh` script will generate self signed
+certificates.
+
+1. Stop the containers:
+  
+   ```bash
+   ./stop.sh
+   ```
+
+2. Copy your SimpleSAMLphp web certificates:
+
+   ```bash
+   cp <your-certificate-file> ./simplesaml/webcert/cert.pem &&
+   cp <your-private-key-file> ./simplesaml/webcert/privkey.pem
+   ```
+  
+3. Start the containers:
+
+   ```bash
+   ./start.sh
+   ```
 
 ### Managing Environment Variables
 
