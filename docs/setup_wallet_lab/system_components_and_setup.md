@@ -27,6 +27,13 @@
     - [How to Prevent Issues](#how-to-prevent-issues)
 - [Setting Up the Environment](#setting-up-the-environment)
   - [Cloning the Repository](#cloning-the-repository)
+  - [Using a Reverse Proxy for the SATOSA Issuer with DPoP Support](#using-a-reverse-proxy-for-the-satosa-issuer-with-dpop-support)
+    - [DPoP and Target URI Binding](#dpop-and-target-uri-binding)
+    - [Proper Host Handling](#proper-host-handling)
+    - [Required NGINX Configuration](#required-nginx-configuration)
+      - [Explanation of Key Directives](#explanation-of-key-directives)
+    - [Important Considerations](#important-considerations)
+    - [Summary](#summary)
   - [TLS Certificate Requirements for SATOSA](#tls-certificate-requirements-for-satosa)
     - [Remediation Steps](#remediation-steps)
     - [Trust Considerations](#trust-considerations)
@@ -245,6 +252,114 @@ Clone the vc_up_and_running repository from GitHub:
 git clone git@github.com:dc4eu/vc_up_and_running.git
 cd vc_up_and_running
 ```
+
+### Using a Reverse Proxy for the SATOSA Issuer with DPoP Support
+
+This section outlines how to correctly configure a reverse proxy (e.g., NGINX)
+in front of the SATOSA Issuer component in order to support DPoP-bound access
+tokens. It explains the background of the DPoP mechanism and why specific proxy
+settings are critical for successful validation of DPoP proofs.
+
+#### DPoP and Target URI Binding
+
+Demonstration of Proof-of-Possession (DPoP) is a security mechanism used to bind
+an access token to a public key held by the client. This prevents token misuse
+in case of leakage. DPoP proofs are sent as JWTs in the `DPoP` header and must
+include a claim called `htu`, representing the exact target URI that the request
+is made to, excluding query and fragment parts.
+
+The SATOSA Issuer must reconstruct the target URI from its WSGI environment to
+verify that it matches the `htu` in the DPoP proof.
+
+#### Proper Host Handling
+
+In reverse proxy deployments, the SATOSA service does not directly receive
+requests from the client. The original request's scheme, host, and port are
+replaced by the proxy. If not properly forwarded, the SATOSA Issuer will
+reconstruct a target URI that does not match the `htu` in the DPoP claim,
+causing DPoP validation to fail.
+
+Correct reconstruction of the full target URI requires the following information:
+
+- Scheme (e.g., `https`)
+- Host and optional port (e.g., `issuer.example.com:8000`)
+- Path (e.g., `/token`, `/credential`, etc.)
+
+The reverse proxy must preserve this information accurately in the request
+headers forwarded to SATOSA.
+
+#### Required NGINX Configuration
+
+The following is an example NGINX configuration for setting up a reverse proxy
+in front of SATOSA:
+
+```nginx
+http {
+    upstream issuer {
+        server issuer.example.com:8000;  # SATOSA backend container/service
+    }
+
+    server {
+        listen 8000 ssl;
+        listen [::]:8000 ssl;
+        server_name my.external-host.com;
+
+        ssl_certificate /etc/nginx/certs/cert.pem;
+        ssl_certificate_key /etc/nginx/certs/privkey.pem;
+
+        location / {
+            proxy_pass https://issuer;
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+}
+```
+
+##### Explanation of Key Directives
+
+- `proxy_set_header Host $http_host;`
+
+  - Ensures the original `Host` header, including port if present, is preserved.
+    This is critical for `environ["HTTP_HOST"]` in the WSGI layer.
+  - `$http_host` comes from the incoming `Host:` header, unlike `$host`, which
+    is derived from the `Host:` header but defaults to the server name if it's
+    missing.
+
+- `proxy_set_header X-Forwarded-Proto $scheme;`
+
+  - Optionally used by WSGI frameworks (via `ProxyFix` or Gunicorn's
+    `forwarded_allow_ips`) to reconstruct `wsgi.url_scheme`.
+
+- `proxy_pass https://issuer;`
+
+  - Uses HTTPS for backend communication. This must match how SATOSA is
+    configured (e.g., if it's serving HTTPS internally).
+
+#### Important Considerations
+
+- SATOSA should **never** be exposed directly to the public. It must only be
+  reachable through the proxy.
+- If the reverse proxy rewrites or strips path components, DPoP validation will
+  fail due to mismatched `htu` claims.
+- If you want the proxy to influence the `wsgi.url_scheme`, ensure that your
+  WSGI server (e.g., Gunicorn) is configured with `forwarded_allow_ips` to trust
+  headers like `X-Forwarded-Proto`.
+
+#### Summary
+
+DPoP requires exact URI matching between the request seen by the client and the
+one reconstructed by the backend server. When deploying SATOSA behind a reverse
+proxy:
+
+- Ensure the original Host header, including the port if present, is preserved
+  and forwarded to the backend service unchanged.
+- Avoid rewriting or altering the request path
+
+Proper configuration ensures DPoP-bound access tokens can be validated
+correctly, maintaining the integrity and security of the SATOSA Issuer.
 
 ### TLS Certificate Requirements for SATOSA
 
