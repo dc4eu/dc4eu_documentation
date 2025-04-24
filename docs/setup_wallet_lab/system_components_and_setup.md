@@ -20,6 +20,7 @@
   - [Local (Mapped to Host)](#local-mapped-to-host)
   - [External (Internet-Accessible)](#external-internet-accessible)
   - [Port Summary Table](#port-summary-table)
+  - [Endpoint Access Overview](#endpoint-access-overview)
 - [SATOSA Authentication Flow](#satosa-authentication-flow)
   - [Metadata Retrieval](#metadata-retrieval)
   - [Authentication Flow](#authentication-flow)
@@ -42,7 +43,7 @@
   - [Managing Environment Variables](#managing-environment-variables)
     - [Explanation of `.env` Variables](#explanation-of-env-variables)
       - [General Configuration](#general-configuration)
-      - [API Gateway](#api-gateway-1)
+      - [API Gateway (APIGW)](#api-gateway-apigw)
       - [Issuer (SATOSA)](#issuer-satosa)
       - [SimpleSAMLphp (SAML IdP)](#simplesamlphp-saml-idp)
       - [Jaeger Tracing](#jaeger-tracing)
@@ -182,6 +183,36 @@ connectivity requirements:
 | **MockAS** | TBD | Internal | Testing authentication services |
 | **MongoDB** | 27017 | Internal | Backend database |
 | **Jaeger** | 16686 | Local | Used for monitoring and tracing |
+
+### Endpoint Access Overview
+
+The following table summarizes the paths and files that require access, and by
+whom or which service. This overview is intended to clarify access patterns for
+the involved components, including public endpoints, browser-based interactions,
+and backend integrations. It is not comprehensive, but highlights the most
+relevant paths in the current setup.
+
+| Service | Path | Accessibility | Notes |
+| --- | --- | --- | --- |
+| **SATOSA** | /.well-known/openid-federation | Internet | Entity configuration used in trust infrastructure |
+| **SATOSA** | /.well-known/openid-credential-issuer | Internet | OIDC discovery document for the credential issuer |
+| **SATOSA** | /token | Internet | OAuth2 token endpoint, accessed by clients (wallets) after receiving authorization code |
+| **SATOSA** | /par | Internet | Pushed Authorization Request endpoint, allows clients to securely send request parameters |
+| **SATOSA** | /authorization | Internet | OAuth2 authorization endpoint used by clients to initiate credential requests |
+| **SATOSA** | /saml2sp/acs/post | End Users | Assertion Consumer Service endpoint. SimpleSAMLphp posts SAML Assertions to this URL after user authentication |
+| **SimpleSAMLphp** | /simplesaml/module.php/saml/idp/singlesignonservice | End Users | SAML IdP SSO endpoint, accepts authentication requests from SATOSA (as SAML Service Provider) |
+| **SimpleSAMLphp** | /simplesaml/module.php/core/loginuserpass | End Users | Login form for username and password authentication |
+| **SimpleSAMLphp** | /simplesaml/module.php/core/assets/js/loginuserpass.js | End Users | JavaScript for login form |
+| **SimpleSAMLphp** | /simplesaml/ | None | Should be blocked in production to avoid exposing admin interface |
+| **SimpleSAMLphp** | /simplesaml/module.php/core/welcome | None | Welcome page |
+| **SimpleSAMLphp** | /simplesaml/module.php/core/error/nocookie | End Users | Error handler for cookie-related issues |
+| **SimpleSAMLphp** | /simplesaml/saml2/idp/metadata.php | SATOSA | IdP metadata endpoint used for configuring trust between SimpleSAMLphp and SATOSA at setup |
+
+| Term | Meaning | Examples |
+| --- | --- | --- |
+| Internet | Any external system or client, including automated software (wallets, apps, servers) connecting machine-to-machine from anywhere | Wallets fetching metadata or sending token requests |
+| End Users | Access is initiated by a human user in a browser, typically during an interactive session (e.g., login, consent) | Browser-based login forms, auto-POSTs from SAML Responses |
+| None | No access requirement ||
 
 ## SATOSA Authentication Flow
 
@@ -537,7 +568,7 @@ CREDENTIAL_OFFER_URL=https://dc4eu.wwwallet.org/cb
   The name of the Docker network that all containers use for internal
   communication.
 
-##### API Gateway
+##### API Gateway (APIGW)
 
 - APIGW_HOST_PORT=8080  
   The port mapped to the host for accessing the API Gateway.
