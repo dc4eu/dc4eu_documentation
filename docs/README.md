@@ -1,4 +1,6 @@
-# DC4EU Wallet Interoperability Lab
+# DC4EU Documentation
+
+## Wallet Interoperability Lab
 
 This documentation describes the setup and structure of the DC4EU wallet
 interoperability lab, developed under Work Package 7 (WP7).
@@ -8,7 +10,7 @@ wallet interacting with a trust infrastructure. It is intended for implementers
 working with credential issuance and presentation across wallet providers,
 issuers, and verifiers in a cross-border context.
 
-## Contents
+### Contents
 
 - [Interoperability Lab Overview](./interoperability_lab_overview.md)
 
@@ -28,11 +30,19 @@ issuers, and verifiers in a cross-border context.
 - Trust Framework
   - [DC4EU Pilot Federation](./trust_framework/dc4eu_pilot_federation.md)
 
-## Target Audience
+### Target Audience
 
-This documentation is intended for technical users involved in the integration
-and development of digital wallet solutions, credential services, or federation
-infrastructure within the scope of DC4EU.
+The Wallet Interoperability Lab documentation is intended for technical users
+involved in the integration and development of digital wallet solutions, credential
+services, or federation infrastructure within the scope of DC4EU.
 
 Refer to the [`CONTRIBUTING.md`](../CONTRIBUTING.md) file for documentation
 style and structure guidelines.
+
+## DC4EU wwWallet Demo User Guide
+
+This documentation is a non-technical quick User Guide that showcases how end-users
+ can try the DC4EU wwWallet Demo environment to create a wallet, obtain Verifiable
+ Credentials such as PID and EHIC, and present them to relying parties.
+
+- [DC4EU wwWallet Demo User Guide](wwWallet_user_guide/DC4EU_wwWallet_User_Guide.md)
